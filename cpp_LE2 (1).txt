@@ -1,0 +1,297 @@
+//written in C++
+#include <iostream>
+#include <sstream>
+#include <unistd.h>
+#define _WIN32_WINNT 0x0500
+#include <windows.h>
+
+std::string forceLower(std::string input){
+    for(int i = 0; i < input.length(); i++){
+        input[i] = tolower(input[i]);
+    }
+    return input;
+}
+bool isInt(std::string input){
+    bool result = true;
+    for(int i = 0; i < input.length(); i++){
+        if (!isdigit(input[i])){
+            result = false;
+            break;
+        }
+    }
+    return result;
+}
+void delayCout(std::string message, int spd){
+    spd = spd * 1000;
+    for(int i = 0; i < message.length(); i++){
+        std::cout << message[i];
+        usleep(spd);
+    }
+}
+std::string removeIt(std::string input){
+    std::string tempStr;
+    for(int i = 0; i < input.length(); i ++){
+        if (i % 2 == 0){
+            tempStr = tempStr + input[i];
+        } else if (input[i] == ' '){
+            tempStr = tempStr + "n";
+        } else{
+            tempStr = tempStr + " ";
+        }
+    }
+    return tempStr;
+}
+void moveIt(int x, int y){
+    HWND consoleWindow = GetConsoleWindow();
+
+    SetWindowPos(consoleWindow, 0, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+}
+
+//intros
+void qIntro(){
+    std::cout << "Hello, please enter your player information!" << std::endl;
+}
+void qIntro2(std::string name){
+    std::cout << "It is good to meet you, " << name << "!\n";
+}
+
+//info collectors with data validation
+std::string qName(){
+    std::string result = "Blank";
+
+    while(true){
+        std::cout << "Name: ";
+        getline(std::cin, result);
+        if(result.length() > 25){
+            std::cout << "That's a little too long, what is the shorter version?\n";
+        } else if(result.length() <= 1){
+            std::cout << "That's a little too short, what is your full name?\n";
+        } else {
+            break;
+        }
+    }
+    return result;
+}
+int qAge(){
+    std::string result = "0";
+    int result2 = 0;
+    std::cout << "Age (years): ";
+    std::cin >> result;
+
+    while(!isInt(result)){
+        std::cout << "Please enter a whole number (integer) of years.\n";
+        std::cout << "Age (years): ";
+        std::cin >> result;
+    }
+    std::stringstream geek(result);
+    geek >> result2;
+    return result2;
+}
+int qHeight(){
+    std::string result = "0";
+    int result2 = 0;
+    std::cout << "Height (inches): ";
+    std::cin >> result;
+
+    while(!isInt(result)){
+        std::cout << "Please enter a whole number (integer) of inches.\n";
+        std::cout << "Height (inches): ";
+        std::cin >> result;
+    }
+    std::stringstream geek(result);
+    geek >> result2;
+    return result2;
+}
+
+
+class Player{
+    private:
+        std::string name = "John Doe";
+        int age = 0;
+        int height = 0;
+    public:
+        Player(){
+            std::string aName = qName();
+            int aAge = qAge();
+            int aHeight = qHeight();
+
+            setName(aName); setAge(aAge); setHeight(aHeight);
+        }
+
+        std::string getInfo(std::string aInfo){
+            std::string result = "None";
+            std::ostringstream convert;
+            if(forceLower(aInfo) == "name"){
+                result = name;
+            } else if(forceLower(aInfo) == "age"){
+                convert << age;
+                result = convert.str();
+            } else if(forceLower(aInfo) == "height"){
+                convert << height;
+                result = convert.str();
+            } else{
+                result = "Invalid";
+            }
+            return result;
+        }
+
+        void setName(std::string aName){name = aName;}
+        void setAge(int aAge){age = aAge;}
+        void setHeight(int aHeight){height = aHeight;}
+};
+
+class Ghost{
+    public:
+        std::string name = "n";
+        int age = 42;
+        int height = 84;
+        Ghost(std::string pName){
+            Intro(pName);
+        }
+        void Intro(std::string pName){
+            int j = 1;
+            for(int i = 0; i < height; i++){
+                std::cout << name << "\n";
+                if(i % 2 == 0){
+                    system("cls");
+                } else if(i % j == 0){
+                    std::cout << "  hello  " << pName;
+                    j+=(i+1);
+                } else{
+                    std::cout << " _";
+                }
+            }
+        }
+        void Static(){
+            for(int i = 0; i < 40; i++){
+                if(i % 2 == 0){
+                    moveIt(i*3,i*2);
+                } else {
+                    moveIt(i*2,i*3);
+                }
+                Sleep(i);
+            }
+        }
+        void Static2(){
+            for(int i = 0; i < 100; i++){
+                if(i % 2 == 0){
+                    moveIt(50,50);
+                    std::cout << "help";
+                } else {
+                    moveIt(53,53);
+                    std::cout << "hell";
+                }
+                Sleep(1);
+            }
+            system("cls");
+        }
+};
+
+//the fun loop
+void secondLoop(Player player1){
+    std::string uIn;
+    int attempt = 0;
+    Ghost ghost1(player1.getInfo("name"));
+    std::string intro = "What would you like to do?\n ";
+    while(true){
+        delayCout(intro, 20);
+        intro = "/n " + removeIt(intro);
+        delayCout("  " + player1.getInfo("name") + "\n",100);
+        std::cin >> uIn;
+        std::cout << attempt;
+        if(forceLower(uIn) == "exit"){
+            delayCout("ERROR\n     ", 200);
+            system("cls");
+            ghost1.Intro(player1.getInfo("name"));
+            attempt++;
+        } else if(forceLower(uIn) == "info"){
+            std::string msg1 = "Player Name: " + player1.getInfo("name") + "\n ";
+            std::string msg2 = "Player Age: " + player1.getInfo("age") + "\n  ";
+            std::string msg3 = "Player Height: " + player1.getInfo("height") + "\n   ";
+            delayCout(msg1, 20);
+            delayCout(msg2, 40);
+            delayCout(msg3,80);
+            attempt++;
+        } else if(uIn == "n"){
+            delayCout("T3RM1N@TE\n", 40);
+            break;
+        } else if(forceLower(uIn) == "help"){
+            if(attempt % 3 == 0){
+                ghost1.Static();
+            } else if(attempt % 2 == 0){
+                ghost1.Static2();
+            }
+            std::cout << "\n\n no\n\\nn";
+            attempt++;
+        } else if(attempt > 10){
+            ghost1.Intro(player1.getInfo("name"));
+            break;
+        } else{
+            std::string msg4 = "eeee\n eee\n ee\n e\nexit\n  ";
+            std::string msg5 = uIn + uIn + uIn + uIn + "\n  ";
+            delayCout(msg4, 20);
+            delayCout(msg5, 10);
+            attempt++;
+        }
+    }
+}
+
+//the regular loop
+void firstLoop(Player player1){
+    std::string uIn;
+    int attempt = 0;
+    while(true){
+        std::cout << "What would you like to do? ";
+        std::cin >> uIn;
+        if(forceLower(uIn) == "exit" && attempt < 99){
+            //ending 1
+            std::cout << "Goodbye!";
+            break;
+        } else if(attempt == 99){
+            //ending 2
+            delayCout("break;\n",100);
+            delayCout(". . .\n\nn",500);
+            break;
+        } else if(forceLower(uIn) == "info"){
+            std::cout << "Player Name: " << player1.getInfo("name") << std::endl;
+            std::cout << "Player Age: " << player1.getInfo("age") << std::endl;
+            std::cout << "Player Height: " << player1.getInfo("height") << std::endl;
+        } else if(forceLower(uIn) == "name"){
+            std::cout << "Player Name: " << player1.getInfo("name") << std::endl;
+        } else if(forceLower(uIn) == "age"){
+            std::cout << "Player Age: " << player1.getInfo("age") << std::endl;
+        } else if(forceLower(uIn) == "height"){
+            std::cout << "Player Height: " << player1.getInfo("height") << std::endl;
+        } else if(forceLower(uIn) == "help" && attempt == 0){
+            std::cout << "Current options: Info, Name, Age, Height, Help, and Exit." << std::endl;
+        } else if(forceLower(uIn) == "help" && attempt > 0 && attempt < 4){
+            std::cout << "Current options: Info, Name, Age, Height, Helpp, and Exit." << std::endl;
+        } else if(forceLower(uIn) == "helpp" && attempt > 0){
+            std::cout << "Cuur3nt 0pti0n5: 1nf0, N@m3, @g3, H3i9ht, H3lpme, and " << std::endl;
+            attempt = 99;
+            secondLoop(player1);
+        } else if(attempt > 4 && attempt < 10){
+            std::cout << "Having a hard time? Here are the options.\n";
+            std::cout << "Current options: Info, Name, Age, Height, Help, and Exit." << std::endl;
+            attempt++;
+        } else if(attempt == 10){
+            std::cout << "Well, that was fun.\nBetter luck next time!\n";
+            break;
+        } else{
+            std::cout << "That doesn't seem to be an option, try typing 'help'.";
+            attempt++;
+        }
+    }
+}
+
+
+int main(){
+
+    qIntro();
+    Player player1;
+
+    qIntro2(player1.getInfo("name"));
+    firstLoop(player1);
+
+    return 0;
+}
